@@ -15,7 +15,7 @@ func NewPostfixSender() Sender {
 
 // SendMail : function is used to send mail using postfix using the parameters send from the post request by the client.
 func (p *PostfixSender) SendMail(to, subject, body string) error {
-	from := "nchapagain@supplyframe.com"
+	from := "abc@def.com"
 	msg := []byte("To: " + to + "\r\n" +
 		"Subject: " + subject + "" +
 		"\r\n\r\n" + body)

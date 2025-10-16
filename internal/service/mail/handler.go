@@ -37,12 +37,33 @@ func (h *Handler) SendMail(c *gin.Context) {
 			constants.Error,
 			constants.InternalServerError,
 		))
+		return
 	}
+
 	var x = mail.NewParsedMessage()
-	c.JSON(http.StatusOK, getDto(
-		constants.Success,
-		x,
-	))
+	if x == nil {
+		c.JSON(500, getDto(
+			constants.Error,
+			constants.InternalServerError,
+		))
+		return
+	}
+	if x.DSN[0] == '2' {
+		c.JSON(http.StatusOK, getDto(
+			constants.Success,
+			x.Message,
+		))
+	} else if x.DSN[0] == '4' {
+		c.JSON(http.StatusBadRequest, getDto(
+			constants.Error,
+			x.Message,
+		))
+	} else if x.DSN[0] == '5' {
+		c.JSON(http.StatusInternalServerError, getDto(
+			constants.Error,
+			x.Message,
+		))
+	}
 }
 
 func getDto(status, message string) EmailResponseDTO {
