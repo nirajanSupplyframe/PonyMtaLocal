@@ -1,0 +1,38 @@
+httptester.http
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Temporary Files
+tmp/
+# Test binaries
+*_test
+
+# Output of 'go build'
+*.out
+
+# Dependency directories
+/vendor/
+
+# Local environment variables and secrets (if applicable)
+.env
+.env.*
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Log files
+*.log
+
+# Build cache
+/go.work.sum
+/go.sum
+
+
+#air
+.air.toml
