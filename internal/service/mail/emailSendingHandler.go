@@ -10,6 +10,8 @@ import (
 
 type Handler struct {
 	sender mail.Sender
+	//databaseEntry        storage.InsertPostfixResponse
+	//databaseRequestEntry storage.InsertPostfixRequest
 }
 
 func NewHandler() *Handler {
@@ -20,7 +22,7 @@ func NewHandler() *Handler {
 
 func (h *Handler) SendMail(c *gin.Context) {
 
-	var req RequestDTO
+	var req PostRequestDTO
 
 	if err := c.BindJSON(&req); err != nil {
 
@@ -30,8 +32,8 @@ func (h *Handler) SendMail(c *gin.Context) {
 		))
 		return
 	}
-
-	if err := h.sender.SendMail(req.To, req.Subject, req.Body); err != nil {
+	//h.databaseRequestEntry.InsertRequestData(req)
+	if err := h.sender.SendMail(req.From, req.To, req.Subject, req.Body); err != nil {
 
 		c.JSON(500, getDto(
 			constants.Error,
@@ -41,6 +43,7 @@ func (h *Handler) SendMail(c *gin.Context) {
 	}
 
 	var x = mail.NewParsedMessage()
+
 	if x == nil {
 		c.JSON(500, getDto(
 			constants.Error,
@@ -48,6 +51,7 @@ func (h *Handler) SendMail(c *gin.Context) {
 		))
 		return
 	}
+
 	if x.DSN[0] == '2' {
 		c.JSON(http.StatusOK, getDto(
 			constants.Success,
@@ -64,10 +68,11 @@ func (h *Handler) SendMail(c *gin.Context) {
 			x.Message,
 		))
 	}
+	//h.databaseEntry.InsertResponseData(x)
 }
 
-func getDto(status, message string) EmailResponseDTO {
-	return EmailResponseDTO{
+func getDto(status, message string) PostEmailResponseDTO {
+	return PostEmailResponseDTO{
 		Status:  status,
 		Message: message,
 	}

@@ -14,7 +14,7 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) GetUser(c *gin.Context) {
-	res := mail.EmailResponseDTO{
+	res := mail.PostEmailResponseDTO{
 		Status:  constants.Success,
 		Message: constants.Success,
 	}

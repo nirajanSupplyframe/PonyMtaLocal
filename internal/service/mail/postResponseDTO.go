@@ -1,6 +1,6 @@
 package mail
 
-type EmailResponseDTO struct {
+type PostEmailResponseDTO struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }

@@ -12,7 +12,7 @@ import (
 type Parsing struct {
 }
 
-type PostfixLog struct {
+type PostfixLogDTO struct {
 	Timestamp time.Time
 	ProcessID string
 	To        string
@@ -25,7 +25,7 @@ type PostfixLog struct {
 	Raw       string // store original line (optional)
 }
 
-func NewParsedMessage() *PostfixLog {
+func NewParsedMessage() *PostfixLogDTO {
 	cmd := exec.Command("log", "stream", "--predicate", "process CONTAINS \"smtp\"", "--info")
 	stdout, _ := cmd.StdoutPipe()
 	err := cmd.Start()
@@ -48,20 +48,20 @@ func NewParsedMessage() *PostfixLog {
 	return nil
 }
 
+var regexString = `^(\\d{4}-\\d{2}-\\d{2} [\\d:.+-]+)\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+smtp:\\s+(\\w+): to=<([^>]+)>, relay=([^,]+), delay=([^,]+), delays=([^,]+), dsn=([^,]+), status=(\\w+) \\((.+)\\)$`
 var postfixRegex = regexp.MustCompile(
-	`^(\d{4}-\d{2}-\d{2} [\d:.+-]+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+smtp:\s+(\w+): to=<([^>]+)>, relay=([^,]+), delay=([^,]+), delays=([^,]+), dsn=([^,]+), status=(\w+) \((.+)\)$`,
-)
+	regexString)
 
-func ParsePostfixLog(line string) *PostfixLog {
+func ParsePostfixLog(line string) *PostfixLogDTO {
 
 	matches := postfixRegex.FindStringSubmatch(line)
 	if len(matches) == 0 {
 		return nil
 	}
+	var timesLayout = "2006-01-02 15:04:05.000000-0700"
+	timestamp, _ := time.Parse(timesLayout, matches[1])
 
-	timestamp, _ := time.Parse("2006-01-02 15:04:05.000000-0700", matches[1])
-
-	return &PostfixLog{
+	return &PostfixLogDTO{
 		Timestamp: timestamp,
 		ProcessID: matches[2],
 		To:        matches[3],

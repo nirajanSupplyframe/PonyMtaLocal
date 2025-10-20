@@ -19,7 +19,7 @@ const (
 	MtaStatusExpired  MtaStatus = "expired"
 )
 
-type EmailObject struct {
+type StatusEmailObject struct {
 	Id           int
 	State        ProcessingState
 	PostfixId    string
