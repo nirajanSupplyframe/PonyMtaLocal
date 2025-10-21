@@ -1,14 +1,27 @@
 package events
 
+import "time"
+
 type EventType int
 
 const (
-	EventMailQueued EventType = iota
-	EventMailDelivered
-	EventMailBounced
+	EventQueued EventType = iota
+	EventLinked
+	EventStatus
 )
 
 type Event struct {
-	Type    EventType
-	Message any
+	Type      EventType
+	RequestID string
+	QueueID   string
+	Status    string
+	Raw       string
+}
+
+type EmailState struct {
+	RequestID string    `json:"request_id"`
+	QueuedID  string    `json:"queued_id"`
+	Status    string    `json:"status"`
+	Reason    string    `json:"reason"`
+	Updated   time.Time `json:"updated"`
 }

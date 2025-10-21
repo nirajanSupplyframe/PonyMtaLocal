@@ -1,5 +1,5 @@
 package mail
 
 type Sender interface {
-	SendMail(from, to, subject, body string) error
+	SendMail(to, subject, body string) (string, error)
 }

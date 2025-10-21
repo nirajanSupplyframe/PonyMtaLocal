@@ -1,35 +1,69 @@
 package v1
 
 import (
-	"gopro/internal/config"
-	"gopro/internal/service/mail"
-	"gopro/internal/service/user"
+	"gopro/internal/events"
+	mail2 "gopro/internal/infra/mail"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	engine *gin.Engine
-	cfg    config.Config
+	sm     *events.StateManager
+	sender mail2.Sender
 }
 
-func NewServer(cfg config.Config) *Server {
-
-	r := gin.Default()
-
-	userHandler := user.NewHandler()
-	mailHandler := mail.NewHandler()
-
-	r.GET("/api/v1/user", userHandler.GetUser)
-	r.POST("/api/v1/mail", mailHandler.SendMail)
-
-	return &Server{engine: r, cfg: cfg}
-
+func NewServer(sm *events.StateManager, s mail2.Sender) *Server {
+	return &Server{sm: sm, sender: s}
 }
 
-func (s *Server) Start() {
-	err := s.engine.Run(":" + s.cfg.Port)
-	if err != nil {
+type sendReq struct {
+	To      string `json:"to" binding:" required,email" `
+	Subject string `json:"subject" binding:"required"`
+	Body    string `json:"body" binding:"required"`
+}
+
+type sendResp struct {
+	RequestID string `json:"requestID"`
+	Status    int    `json:"status"`
+}
+
+func (s *Server) RegisterRoutes(r *gin.Engine) {
+	r.POST("/send", s.handleSend)
+	r.GET("/status/:id", s.handleStatus)
+}
+
+func (s *Server) handleSend(c *gin.Context) {
+	var req sendReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Sends mail and injects message-id to mail from body param.
+	reqID, err := s.sender.SendMail(req.To, req.Subject, req.Body)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	//notify state manager about this request, and that it exists.
+	s.sm.Publish(events.Event{
+		Type:      events.EventQueued,
+		RequestID: reqID,
+	})
+
+	c.JSON(http.StatusAccepted, sendResp{RequestID: reqID, Status: http.StatusOK})
+
+}
+
+func (s *Server) handleStatus(c *gin.Context) {
+	id := c.Param("id")
+	st := s.sm.GetStatus(id)
+	if st == nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "Not found"})
+		return
+	}
+	c.JSON(http.StatusOK, st)
 }
