@@ -13,7 +13,7 @@ var (
 )
 
 func TailLog(sm *StateManager) {
-	cmd := exec.Command("log", "stream", "--predicate", "process contains \"smtp\"", "--info")
+	cmd := exec.Command("log", "stream", "--predicate", "process contains \"smtp\" OR process contains \"cleanup\"", "--info")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		panic(err)
@@ -35,15 +35,16 @@ func TailLog(sm *StateManager) {
 			qid := m[1]
 			msgid := m[2]
 
-			reqID := extractRequestIDFromMessageID(msgid)
-			if reqID != "" {
+			mesID := extractMessageIDFromLogs(msgid)
+			if mesID != "" {
 				sm.Publish(Event{
 					Type:      EventLinked,
-					RequestID: reqID,
+					RequestID: mesID,
 					QueueID:   qid,
 					Raw:       line,
 				})
 			}
+			println("email LINKED with (tail log) request id :", mesID)
 			continue
 		}
 
@@ -57,12 +58,21 @@ func TailLog(sm *StateManager) {
 				Status:  status,
 				Raw:     reason,
 			})
+			println("email STATUS check  with qid :", qid)
 			continue
 		}
+
+		//if m:=reMessageID.FindStringSubmatch(line); len(m) > 0 {
+		//	sm.Publish(Event{
+		//		Type: EmailDelivered,
+		//		QueueID: qid
+		//	})
+		//}
+
 	}
 }
 
-func extractRequestIDFromMessageID(msgid string) string {
+func extractMessageIDFromLogs(msgid string) string {
 	msgid = strings.TrimSpace(msgid)
 	msgid = strings.TrimPrefix(msgid, "<")
 	msgid = strings.TrimSuffix(msgid, ">")

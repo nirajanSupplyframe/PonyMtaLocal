@@ -14,6 +14,7 @@ type Event struct {
 	Type      EventType
 	RequestID string
 	QueueID   string
+	MessageID string
 	Status    string
 	Raw       string
 }

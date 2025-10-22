@@ -33,8 +33,8 @@ func main() {
 	srv := &http.Server{
 		Addr:         ":8080",
 		Handler:      r,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  1000000 * time.Second,
+		WriteTimeout: 1000000 * time.Second,
 	}
 	log.Println("listening on :8080")
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

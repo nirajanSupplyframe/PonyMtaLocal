@@ -18,14 +18,14 @@ func NewServer(sm *events.StateManager, s mail2.Sender) *Server {
 }
 
 type sendReq struct {
-	To      string `json:"to" binding:" required,email" `
+	To      string `json:"to" binding:"required,email" `
 	Subject string `json:"subject" binding:"required"`
 	Body    string `json:"body" binding:"required"`
 }
 
 type sendResp struct {
 	RequestID string `json:"requestID"`
-	Status    int    `json:"status"`
+	Status    string `json:"status"`
 }
 
 func (s *Server) RegisterRoutes(r *gin.Engine) {
@@ -49,12 +49,14 @@ func (s *Server) handleSend(c *gin.Context) {
 	}
 
 	//notify state manager about this request, and that it exists.
+	println("email QUEUED (handle send before publish) with request id :", reqID)
 	s.sm.Publish(events.Event{
 		Type:      events.EventQueued,
 		RequestID: reqID,
+		Status:    "queued",
 	})
 
-	c.JSON(http.StatusAccepted, sendResp{RequestID: reqID, Status: http.StatusOK})
+	c.JSON(http.StatusAccepted, sendResp{RequestID: reqID, Status: s.sm.GetStatus(reqID).Status})
 
 }
 

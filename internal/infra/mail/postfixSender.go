@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/smtp"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -18,22 +19,26 @@ type PostfixSender struct {
 func NewPostfixSender(addr string) Sender {
 	return &PostfixSender{
 		addr: addr,
-		from: "noreply@example.local",
+		from: "nirajanchapagain@SF-NCHAPAGA.localdomain",
 	}
 }
 
 // SendMail : function is used to send mail using postfix using the parameters send from the post request by the client.
 func (p *PostfixSender) SendMail(to, subject, body string) (string, error) {
 	id := uuid.New().String()
-	messageID := fmt.Sprintf("<%s@example.com>", id)
+	host, _ := os.Hostname()
+	println(host)
+	println("Real id created at sendmail function :"+id, host+".localdomain")
+	messageID := fmt.Sprintf("<%s@%s>", id, host+".localdomain")
 	xInternal := id
+	println("Message id after change :" + messageID)
 
 	var b bytes.Buffer
-	b.WriteString("From: " + p.from)
-	b.WriteString("To: " + to)
-	b.WriteString("Subject: " + subject)
-	b.WriteString("MessageID: " + messageID)
-	b.WriteString("X-Internal-ID: " + xInternal)
+	b.WriteString("From: " + p.from + "\r\n")
+	b.WriteString("To: " + to + "\r\n")
+	b.WriteString("Subject: " + subject + "\r\n")
+	b.WriteString("Message-ID: " + messageID + "\r\n")
+	b.WriteString("X-Internal-ID: " + xInternal + "\r\n")
 	//post fix email formating requires a line gap between headers and message body
 	b.WriteString("\r\n")
 	b.WriteString(body)
