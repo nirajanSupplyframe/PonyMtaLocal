@@ -1,10 +1,20 @@
 package events
 
 import (
+	"database/sql"
 	"fmt"
+	"gopro/internal/dtos"
+	"gopro/internal/storage"
 	"time"
 )
 
+type Server struct {
+	db *sql.DB
+}
+
+func (s Server) NewServer() {
+
+}
 func (sm *StateManager) eventLoop() {
 
 	byRequest := map[string]*EmailState{}
@@ -29,6 +39,7 @@ func (sm *StateManager) eventLoop() {
 				}
 				//Map message id to request
 				msdIdToReq[event.RequestID] = event.RequestID
+
 				println("email QUEUED with request id :", event.RequestID)
 
 			case EventLinked:
@@ -48,6 +59,16 @@ func (sm *StateManager) eventLoop() {
 						Updated:   time.Now(),
 					}
 				}
+				InsertIntoEmailDatabase(dtos.PostfixLogDTO{
+					Id:         event.RequestID,
+					AccountId:  "",
+					PostFixKey: event.QueueID,
+					CreatedOn:  time.Now(),
+					Status:     "linked",
+					Reason:     "",
+					Postfix:    event.Raw,
+					UpdatedOn:  time.Now(),
+				})
 
 			case EventStatus:
 				q := event.QueueID
@@ -80,9 +101,15 @@ func (sm *StateManager) eventLoop() {
 				copied := *st
 				req.resp <- &copied
 			} else {
+				err := storage.NewExecuteSql().CheckReqIdInDatabase(req.requestID)
+				if err != nil {
+					req.resp <- &EmailState{
+						RequestID: req.requestID,
+						Status:    "error",
+					}
+				}
 				req.resp <- nil
 			}
-
 		case <-sm.doneCh:
 			fmt.Println("Event loop shutting down...")
 			return

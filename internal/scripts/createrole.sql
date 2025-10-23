@@ -1,3 +1,3 @@
 -- run only once in any given env
-create role ponymta login;
-alter database ponymta owner to ponymta;
+-- create role ponymta login;
+-- alter database ponymta owner to ponymta;

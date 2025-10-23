@@ -6,8 +6,6 @@ import (
 	"net/smtp"
 	"os"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 type PostfixSender struct {
@@ -24,8 +22,7 @@ func NewPostfixSender(addr string) Sender {
 }
 
 // SendMail : function is used to send mail using postfix using the parameters send from the post request by the client.
-func (p *PostfixSender) SendMail(to, subject, body string) (string, error) {
-	id := uuid.New().String()
+func (p *PostfixSender) SendMail(id, to, subject, body string) (string, error) {
 	host, _ := os.Hostname()
 	println(host)
 	println("Real id created at sendmail function :"+id, host+".localdomain")

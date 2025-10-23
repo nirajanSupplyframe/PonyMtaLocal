@@ -2,6 +2,7 @@ package databaseInit
 
 import (
 	"database/sql"
+	"gopro/internal/storage"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -25,6 +26,20 @@ func NewDatabaseInit(path string) *DatabaseStruct {
 	return db
 }
 
-func (db *DatabaseStruct) initSchema() {
+func (db *DatabaseStruct) InitSchema() {
+
+	st := storage.NewExecuteSql()
+	err := st.CreateTables()
+	if err != nil {
+		return
+	}
+	err3 := st.InsertValuesInDomainAndMTA(db.conn)
+	if err3 != nil {
+		return
+	}
+	err2 := st.CreateRole()
+	if err2 != nil {
+		return
+	}
 
 }

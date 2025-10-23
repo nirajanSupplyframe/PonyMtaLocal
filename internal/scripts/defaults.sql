@@ -1,11 +1,11 @@
-INSERT INTO domains (name)
+INSERT OR IGNORE INTO domain (name)
 VALUES ('supplyframe.tech'),
        ('supplyframe.io'),
        ('supplyframe.app'),
        ('componentsearchengine.com');
 
 
-insert into mta_status_text (short, support)
+INSERT OR IGNORE INTO mta_status_text (short, support)
 values ('Unknown',
         'Recipient''s MTA refused the email with a status error that we haven''t yet investigated.  Please contact ops@supplyframe.com for assistance.'),
        ('Sent successfully',

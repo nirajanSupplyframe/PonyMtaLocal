@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"gopro/internal/events"
 	v1 "gopro/internal/http/v1"
 	mail2 "gopro/internal/infra/mail"
+	"gopro/internal/storage/databaseInit"
 	"log"
 	"net/http"
 	"time"
@@ -15,6 +17,22 @@ import (
 // the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
 
 func main() {
+	//Open the database
+	db, err := sql.Open("sqlite3", "./mail.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//close the database
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			log.Fatalf("database close error: %v", err)
+		}
+	}()
+
+	dbs := databaseInit.NewDatabaseInit("./mail.db")
+	dbs.InitSchema()
+
 	//Creates a new event events manager
 	sm := events.NewStateManager()
 	sm.Start()
@@ -27,7 +45,7 @@ func main() {
 	//Create gin engine and register routes
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	server := v1.NewServer(sm, s)
+	server := v1.NewServer(sm, s, db)
 	server.RegisterRoutes(r)
 
 	srv := &http.Server{

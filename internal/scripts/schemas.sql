@@ -1,19 +1,18 @@
 
-
-CREATE table domain(
+CREATE table IF NOT EXISTS domain(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT unique not null
 );
 
-create table mta_status_text (
+create table IF NOT EXISTS mta_status_text (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    short text not null,
-    support text not null,
-    customer text not null default ''
+    short text unique not null,
+    support text unique not null,
+    customer text unique not null default ''
 );
 
 
-CREATE TABLE application (
+CREATE TABLE  IF NOT EXISTS application (
     id integer primary key autoincrement,
     apikey text unique not null,
     name text not null,
@@ -22,7 +21,7 @@ CREATE TABLE application (
 
 );
 
-create table email (
+create table IF NOT EXISTS email_status (
     id text not null primary key,
     state TEXT not null check ( state IN ('enqueuing','sending','sent','failed')),
     postfix_id text not null,
@@ -35,3 +34,19 @@ create table email (
     foreign key (status_text_id) references mta_status_text(id),
     foreign key (domain_id) references domain(id)
 );
+
+create table if not exists post_request
+(
+    id text not null primary key,
+    message text not null,
+    created_on text not null
+);
+
+create table if not exists get_request(
+    request_id text not null primary key,
+    status
+);
+
+-- create table if not exists post_response(
+--
+-- );
